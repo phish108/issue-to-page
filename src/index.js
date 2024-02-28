@@ -90,7 +90,7 @@ async function run() {
 
                 // create the issue's target folder
                 core.debug("create parent directory for the issue's content");
-                await fs.mkdir(path.join(target_folder, `${issue_template || "page"}_${issue.id}`), {recursive: true});
+                await fs.mkdir(path.join(target_folder, `${issue_template || "page"}_${issue.number}`), {recursive: true});
 
                 // download all attachments and keep the content type
                 // replace all links to point to the correct location of the attachments
@@ -132,7 +132,7 @@ async function run() {
                 core.debug("write the issue as a markdown page");
 
                 await fs.writeFile(
-                    path.join(target_folder, `${issue_template || "page"}_${issue.id}`, "index.md"),
+                    path.join(target_folder, `${issue_template || "page"}_${issue.number}`, "index.md"),
                     page_content
                 );
 
