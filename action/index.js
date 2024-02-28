@@ -30963,7 +30963,7 @@ async function run() {
                 }
 
                 // create the issue's target folder
-                await fs.mkdir(path.join(target_folder, `${issue_template}_${issue.id}`), {recursive: true});
+                await fs.mkdir(path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`), {recursive: true});
 
                 // NOTE: During development attachments remain at github
 
@@ -30979,7 +30979,7 @@ async function run() {
 
                 // create the index.md file with the issue content
                 await fs.writeFile(
-                    path.join(target_folder, `${issue_template}_${issue.id}`, "index.md"),
+                    path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`, "index.md"),
                     `# ${title}
                     
                     ${body}`
