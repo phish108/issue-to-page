@@ -30996,7 +30996,7 @@ async function run() {
                 if (bool_close) {
                     core.debug("close the issue");
                     const close_issue_query = `mutation($issueId: ID!) {
-                        updateIssue(input: {id : $issueId, state: CLOSED}){
+                        data: updateIssue(input: {id : $issueId, state: CLOSED}){
                           issue {
                             id
                             number
@@ -31014,7 +31014,8 @@ async function run() {
 
                     core.info(`issue ${issue.id} has resulted in ${JSON.stringify(result, null, 2)}`);
 
-                    if (result.issue.id === issue.id && result.issue.state === "CLOSED") {
+                    if (result.data.issue.id === issue.id && 
+                        result.data.issue.state === "CLOSED") {
                         core.info(`Issue ${issue.number} has been closed`);
                     }
                 }
