@@ -7,33 +7,37 @@ The action will create a folder inside the `target` folder. This folder has name
 
 ## Inputs
 
+### `auto-convert` 
+
+Allows to select users, who's issues are automatically converted even if the `publish_label` is missing. Defaults to the owners of the repo. 
+
+### `close-issue`
+
+Close the issue after conversion. Default is `true`. Set this to `false` or `no` if 
+the issue should remain open. 
+
+### `github-token`
+
+The github access token for the action. Defaults to `github.token`. Use your own token if really needed. 
+
+### `issue-template`
+
+Inform if a template is used. This will then preprocess the issue. If no template is provided, then the issue will be just dumped as plain markdown.
+
 ### `label` 
 
-the label to look for.
+The label to look for. If omitted, then the all issues are converted.
 
-### `issue_template`
+### `publish-label` 
 
-Inform if a template is used. This will then preprocess the issue
+Pass a secondary tag that needs to be present before publishing. If the secondary label is missing, then the issue will not get converted.
 
-### `publish_label` 
+### `target-folder` 
 
-pass a secondary tag that needs to be present before publishing.
-
-### `auto_convert` 
-
-allows to select users, who's issues are automatically converted even if the `publish_label` is missing.
-
-### `target` 
-
-points to a repo directory.
+Points to the repo directory where the issues are converted into.
 
 ### `template` 
 
-allows to set a template for creating the markdown file. 
-
-### `close_issue`
-
-close the issue after conversion. Default is `true`. Set this to `false` or `no` if 
-the issue should remain open. 
+Allows to set a template for creating the markdown file. This is used to validated the fields of the issue.
 
 ## Example usage

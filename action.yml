@@ -5,36 +5,35 @@ branding:
   icon: printer
   color: green
 inputs:
+  auto-convert:
+    description: 'automatically publish the page for selected users'
+    required: false
+    default: '_OWNER'
+  close-issue:
+    description: 'close the issue after conversion'
+    required: false
+    default: 'true'
   github-token:
     description: "the token to access github"
     default: ${{ github.token }}
     required: false
+  issue-template:
+    description: 'template used for the issue'
+    required: false
   label:
     description: 'issue label to handle'
     required: false
-  issue_template:
-    description: 'template used for the issue'
-    required: false
-  template:
-    description: 'template to use'
-    required: false
-    default: 'default'
-  auto_convert:
-    description: 'automatically publish the page for selected users'
-    required: false
-    default: ''
-  publish_label: 
+  publish-label: 
     description: 'secondary label to use for publishing'
     required: false
     default: 'publish'
-  target:
+  target-folder:
     description: 'target folder in the repository'
     required: false
-    default: ${{ github.repository }}
-  close_issue:
-    description: 'close the issue after conversion'
+    default: "/"
+  template:
+    description: 'template to use'
     required: false
-    default: 'true'
 
 runs:
   using: node20
