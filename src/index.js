@@ -72,7 +72,7 @@ async function run() {
                 const labeled_publishing = issue.labels?.nodes?.filter(l => l.name === publish_label).length;
                 const user_publishing = false;
 
-                if (!labeled_publishing || !user_publishing) {
+                if (!(labeled_publishing || user_publishing)) {
                     core.debug("issue is not ready for publishing");
                     continue;
                 }
