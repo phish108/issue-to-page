@@ -30966,7 +30966,7 @@ async function run() {
 
                 // create the issue's target folder
                 core.debug("create parent directory for the issue's content");
-                await fs.mkdir(path.join(target_folder, `${issue_template}_${issue.id}`), {recursive: true});
+                await fs.mkdir(path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`), {recursive: true});
 
                 // download all attachments and keep the content type
                 // replace all links to point to the correct location of the attachments
@@ -30987,7 +30987,7 @@ async function run() {
                 // create the index.md file with the issue content
                 core.debug("write the issue as a markdown page");
                 await fs.writeFile(
-                    path.join(target_folder, `${issue_template}_${issue.id}`, "index.md"),
+                    path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`, "index.md"),
                     `# ${title}
                     
                     ${body}`
@@ -31012,7 +31012,7 @@ async function run() {
                     // inform GH to close the issue
                     const result = await octokit.graphql(close_issue_query, ci_variables);
 
-                    core.debug(`issue ${issue.id} has resulted in ${JSON.stringify(result, null, 2)}`);
+                    core.info(`issue ${issue.id} has resulted in ${JSON.stringify(result, null, 2)}`);
 
                     if (result.issue.id === issue.id && result.issue.state === "CLOSED") {
                         core.info(`Issue ${issue.number} has been closed`);
