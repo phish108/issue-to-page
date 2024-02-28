@@ -134,6 +134,8 @@ async function run() {
                     // inform GH to close the issue
                     const result = await octokit.graphql(close_issue_query, ci_variables);
 
+                    core.debug(`issue ${issue.id} has resulted in ${JSON.stringify(result, null, 2)}`);
+
                     if (result.issue.id === issue.id && result.issue.state === "CLOSED") {
                         core.info(`Issue ${issue.number} has been closed`);
                     }
