@@ -30945,7 +30945,7 @@ async function run() {
         const issues = issue_result.repository.issues.nodes;
 
         if (issues.length > 0) {
-            for (const issue in issues) {
+            for (const issue of issues) {
                 // check if the issue is ready for publishing
                 const labeled_publishing = issue.labels?.nodes?.filter(l => l.name === publish_label).length;
                 const user_publishing = false;
