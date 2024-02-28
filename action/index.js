@@ -30950,7 +30950,10 @@ async function run() {
                 const labeled_publishing = issue.labels?.nodes?.filter(l => l.name === publish_label).length;
                 const user_publishing = false;
 
-                if (!(labeled_publishing || user_publishing)) {
+                core.debug(`issue ${issue.number} is ready for publishing: ${labeled_publishing} based on ${publish_label}`);
+                core.debug(`issue labels are ${issue.labels.nodes.map(l => l.name).join( ", " )}`);
+
+                if (!labeled_publishing && !user_publishing) {
                     core.info("issue is not ready for publishing");
                     continue;
                 }
