@@ -30951,41 +30951,46 @@ async function run() {
                 const user_publishing = false;
 
                 if (!(labeled_publishing || user_publishing)) {
-                    core.debug("issue is not ready for publishing");
+                    core.info("issue is not ready for publishing");
                     continue;
                 }
 
-                // const [idate, itime] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
-                const title = issue.title;
-
                 if (issue_template) {
                     // validate the issue template fields
+                    core.debug("validate against issue template fields");
                 }
 
                 // create the issue's target folder
-                await fs.mkdir(path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`), {recursive: true});
-
-                // NOTE: During development attachments remain at github
+                core.debug("create parent directory for the issue's content");
+                await fs.mkdir(path.join(target_folder, `${issue_template}_${issue.id}`), {recursive: true});
 
                 // download all attachments and keep the content type
                 // replace all links to point to the correct location of the attachments
+
+                // const [idate, itime] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
+                const title = issue.title;
 
                 const body = issue.body;
 
                 // ignore issues without body
                 if (!(body && body.length)) {
+                    core.debug("issue has no body, do not publish.");
                     continue;
                 }
 
+                // NOTE: During development attachments remain at github
+
                 // create the index.md file with the issue content
+                core.debug("write the issue as a markdown page");
                 await fs.writeFile(
-                    path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`, "index.md"),
+                    path.join(target_folder, `${issue_template}_${issue.id}`, "index.md"),
                     `# ${title}
                     
                     ${body}`
                 );
 
                 if (bool_close) {
+                    core.debug("close the issue");
                     const close_issue_query = `mutation($issueId: String!) {
                         updateIssue(input: {id : $issueId, state: CLOSED, stateReason: COMPLETED}){
                           issue {
