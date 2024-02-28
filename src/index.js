@@ -3,6 +3,8 @@ const github = require("@actions/github");
 const fs = require("node:fs").promises;
 const path = require("node:path");
 
+const NJK = require("nunjucks");
+
 async function run() {
     try {
         const message = "well done";
@@ -15,7 +17,7 @@ async function run() {
         const label = core.getInput("label");
         const publish_label = core.getInput("publish-label");
         const target_folder = core.getInput("target-folder");
-        // const template = core.getInput("template");
+        const template = core.getInput("template");
 
         const octokit = github.getOctokit(gh_token);
 
@@ -93,8 +95,12 @@ async function run() {
                 // download all attachments and keep the content type
                 // replace all links to point to the correct location of the attachments
 
-                // const [idate, itime] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
+                // NOTE: During development attachments remain at github
+                // However, for production we need the files so renderers can access them
+
+                const [date, time] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
                 const title = issue.title;
+                const author = issue.author.login;
 
                 const body = issue.body;
 
@@ -104,17 +110,30 @@ async function run() {
                     continue;
                 }
 
-                // NOTE: During development attachments remain at github
+                core.debug("render the markdown");
+
+                const context = {
+                    title,
+                    body,
+                    date,
+                    time,
+                    author
+                };
+                let page_content = "";
+
+                if (template) {
+                    page_content = NJK.render(template, context);
+                }
+                else {
+                    page_content = NJK.renderString("# {{ title }}\n{{ body | safe }}\n", context);
+                }
 
                 // create the index.md file with the issue content
                 core.debug("write the issue as a markdown page");
+
                 await fs.writeFile(
                     path.join(target_folder, `${issue_template || "page"}_${issue.id}`, "index.md"),
-                    `
-# ${title}
-                    
-${body}
-`
+                    page_content
                 );
 
                 if (bool_close) {
