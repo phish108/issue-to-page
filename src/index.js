@@ -10,12 +10,14 @@ async function run() {
         // check and default inputs
         // const auto_convert = core.getInput("auto-convert");
         const close_issue = core.getInput("close-issue") || "";
-        // const gh_token = core.getInput('github-token');
+        const gh_token = core.getInput("github-token");
         const issue_template = core.getInput("issue-template");
         const label = core.getInput("label");
         const publish_label = core.getInput("publish-label");
         const target_folder = core.getInput("target-folder");
         // const template = core.getInput("template");
+
+        const octokit = github.getOctokit(gh_token);
 
         const bool_close = close_issue === "true" || close_issue === "yes" || close_issue === "1";
 
@@ -60,7 +62,7 @@ async function run() {
 
         // load the issue template fields
 
-        const issue_result = await github.graphql(query_issue, query_issue_variables);
+        const issue_result = await octokit.graphql(query_issue, query_issue_variables);
 
         const issues = issue_result.repository.issues.nodes;
 
@@ -121,7 +123,7 @@ async function run() {
                     };
 
                     // inform GH to close the issue
-                    const result = await github.graphql(close_issue_query, ci_variables);
+                    const result = await octokit.graphql(close_issue_query, ci_variables);
 
                     if (result.issue.id === issue.id && result.issue.state === "CLOSED") {
                         core.info(`Issue ${issue.number} has been closed`);
