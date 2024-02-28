@@ -30966,7 +30966,7 @@ async function run() {
 
                 // create the issue's target folder
                 core.debug("create parent directory for the issue's content");
-                await fs.mkdir(path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`), {recursive: true});
+                await fs.mkdir(path.join(target_folder, `${issue_template || "page"}_${issue.id}`), {recursive: true});
 
                 // download all attachments and keep the content type
                 // replace all links to point to the correct location of the attachments
@@ -30987,10 +30987,12 @@ async function run() {
                 // create the index.md file with the issue content
                 core.debug("write the issue as a markdown page");
                 await fs.writeFile(
-                    path.join(github.context.repo.repo, target_folder, `${issue_template}_${issue.id}`, "index.md"),
-                    `# ${title}
+                    path.join(target_folder, `${issue_template || "page"}_${issue.id}`, "index.md"),
+                    `
+# ${title}
                     
-                    ${body}`
+${body}
+`
                 );
 
                 if (bool_close) {
@@ -31014,7 +31016,7 @@ async function run() {
 
                     core.info(`issue ${issue.id} has resulted in ${JSON.stringify(result, null, 2)}`);
 
-                    if (result.data.issue.id === issue.id && 
+                    if (result.data.issue.id === issue.id &&
                         result.data.issue.state === "CLOSED") {
                         core.info(`Issue ${issue.number} has been closed`);
                     }
