@@ -30995,8 +30995,8 @@ async function run() {
 
                 if (bool_close) {
                     core.debug("close the issue");
-                    const close_issue_query = `mutation($issueId: String!) {
-                        updateIssue(input: {id : $issueId, state: CLOSED, stateReason: COMPLETED}){
+                    const close_issue_query = `mutation($issueId: ID!) {
+                        updateIssue(input: {id : $issueId, state: CLOSED}){
                           issue {
                             id
                             number
