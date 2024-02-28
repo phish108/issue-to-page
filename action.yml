@@ -32,7 +32,7 @@ inputs:
     required: false
     default: "/"
   template:
-    description: 'template to use'
+    description: 'template to use to render the issue'
     required: false
 
 runs:
