@@ -34,6 +34,10 @@ inputs:
   template:
     description: 'template to use to render the issue'
     required: false
+  formhints:
+    description: 'YAML file that hints how to parse the issue body'
+    required: false
+    default: formhints.yml
 
 runs:
   using: node20

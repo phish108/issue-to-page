@@ -18,6 +18,7 @@ async function run() {
         const publish_label = core.getInput("publish-label");
         const target_folder = core.getInput("target-folder");
         const template = core.getInput("template");
+        const formhints = core.getInput("formhints");
 
         const octokit = github.getOctokit(gh_token);
 
@@ -62,13 +63,17 @@ async function run() {
             query_issue_variables.labels = labels;
         }
 
-        // load the issue template fields
 
         const issue_result = await octokit.graphql(query_issue, query_issue_variables);
 
         const issues = issue_result.repository.issues.nodes;
 
         if (issues.length > 0) {
+            // load the issue template fields
+
+            const formfile = await fs.readFile(formhints, "utf-8");
+            const hintFields = YAML.parse(formfile);
+
             for (const issue of issues) {
                 // check if the issue is ready for publishing
                 const labeled_publishing = issue.labels?.nodes?.filter(l => l.name === publish_label).length;
