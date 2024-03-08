@@ -281,14 +281,14 @@ async function loadAttachments(body, targetDir) {
 
     // we can only handle attaches to issues,
     // everything else is treated as regular links
-    const regex = new RegExp(`https://github.com/${owner}/${repo}/assets/`);
+    const regex = new RegExp(`https://github\\.com/${owner}/${repo}/assets/`);
 
     core.debug(`attachment regex is ${regex}`);
 
     // get all attachment references
-    const attachments = [...body.matchAll(/\[([^\]]+)\]\(([^)]+)\)/)]
+    const attachments = [...body.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)]
         .map(([_, name, url]) => ({name, url})) // eslint-disable-line no-unused-vars
-        .filter(u => u.url.match(regex) !== null);
+        .filter(u => u.url.match(regex));
 
     core.debug(`attachments are ${attachments}`);
 
