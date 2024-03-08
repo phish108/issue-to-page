@@ -45890,40 +45890,29 @@ function splitBody(body) {
     );
 }
 
-function mapBodyLabels(body, bodyHints) {
-    if(!bodyHints) {
-        core.debug("no hints for body");
-        return {body};
-    }
-
-    core.debug(`map body to form hints ${bodyHints}`);
-
+function hintHandler(bodyHints) {
     const regexImage = /!\[([^\]]+)\]\(([^)]+)\)/g;
     const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
 
-    const bodyFields = splitBody(body);
-
-    if (bodyFields.length === 0) {
-        core.debug("no fields found in body");
-        return {body};
-    }
-
-    const fields = Object.entries(bodyFields).map(([key, value]) => {
+    return function handleHintType([key, value]) {
         const keylist = bodyHints.filter(hint => hint.label === key);
 
         if (keylist.length === 0) {
+            core.debug(`no hint for ${key}`);
             return null;
         }
 
         const newkey = keylist.shift();
 
         if (!("id" in newkey)) {
+            core.debug(`no id for ${newkey} (${key})`);
             return null;
         }
 
         value = value.trim();
 
         if (value === "_No response_") {
+            core.debug(`no response for ${newkey.id}`);
             return null;
         }
 
@@ -45943,8 +45932,33 @@ function mapBodyLabels(body, bodyHints) {
             value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
         }
 
+        core.debug(`remapped field ${newkey.id} to ${value}`);
         return [newkey.id, value];
-    }).filter(f => f !== null);
+    };
+}
+
+function dropEmpty(f) {
+    return f !== null;
+}
+
+function mapBodyLabels(body, bodyHints) {
+    if(!bodyHints) {
+        core.debug("no hints for body");
+        return {body};
+    }
+
+    core.debug(`map body to form hints ${bodyHints}`);
+
+    const bodyFields = splitBody(body);
+
+    if (bodyFields.length === 0) {
+        core.debug("no fields found in body");
+        return {body};
+    }
+
+    const fields = Object.entries(bodyFields)
+        .map(hintHandler(bodyHints))
+        .filter(dropEmpty);
 
     if (fields.length === 0) {
         core.debug("no valid fields found in body");
@@ -45976,10 +45990,12 @@ async function loadAttachments(body, targetDir) {
         .map(([_, name, url]) => ({name, url})) // eslint-disable-line no-unused-vars
         .filter(u => u.url.match(regex));
 
-    core.debug(`attachments are ${JSON.stringify(attachments)}`);
+    // core.debug(`attachments are ${JSON.stringify(attachments)}`);
 
-    if (attachments.length === 0) {
+    if (attachments) {
         // handle one file at the time to catch errors
+        // note that the for loop handles the empty list correctly
+
         for (const attachment of attachments) {
             core.debug(`download attachment ${attachment.name}`);
 
