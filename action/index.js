@@ -45725,7 +45725,7 @@ async function run() {
             core.debug(`load form hints from ${formhints} file`);
             const formfile = await fs.readFile(formhints);
 
-            hintFields = YAML.parse(formfile);
+            hintFields = YAML.parse(formfile.toString());
             core.debug(hintFields);
         }
 
