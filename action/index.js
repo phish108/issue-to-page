@@ -45856,6 +45856,8 @@ async function closeIssue(issue, octokit) {
 }
 
 function splitBody(body) {
+    core.debug("split body into form fields for ${body}");
+
     const fields = body.split(/(### [^\n]+)/);
 
     core.debug("split body into form fields");
