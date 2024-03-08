@@ -45780,12 +45780,16 @@ async function run() {
                 continue;
             }
 
+            const bodyLabels = mapBodyLabels(body, hintFields.body);
+
+            core.debug(`body labels are ${bodyLabels}`);
+
             const context = {
                 title,
                 date,
                 time,
                 author,
-                ... mapBodyLabels(body, hintFields.body),
+                ... bodyLabels,
                 ... hintFields?.extra
             };
 
