@@ -4,177 +4,327 @@ const fs = require("node:fs").promises;
 const path = require("node:path");
 
 const NJK = require("nunjucks");
+const YAML = require("yaml");
 
 async function run() {
-    try {
-        const message = "well done";
+    const message = "well done";
 
-        // check and default inputs
-        // const auto_convert = core.getInput("auto-convert");
-        const close_issue = core.getInput("close-issue") || "";
-        const gh_token = core.getInput("github-token");
-        const issue_template = core.getInput("issue-template");
-        const label = core.getInput("label");
-        const publish_label = core.getInput("publish-label");
-        const target_folder = core.getInput("target-folder");
-        const template = core.getInput("template");
-        const formhints = core.getInput("formhints");
+    // check and default inputs
+    // const auto_convert = core.getInput("auto-convert");
+    const close_issue = core.getInput("close-issue") || "";
+    const gh_token = core.getInput("github-token");
+    const label = core.getInput("label");
+    const publish_label = core.getInput("publish-label");
+    const target_folder = core.getInput("target-folder");
+    const template = core.getInput("template");
+    const formhints = core.getInput("formhints");
 
-        const octokit = github.getOctokit(gh_token);
+    const octokit = github.getOctokit(gh_token);
 
-        const bool_close = close_issue === "true" || close_issue === "yes" || close_issue === "1";
+    const bool_close = close_issue.toLowerCase() === "true" || close_issue.toLowerCase() === "yes" || close_issue === "1";
 
-        const labels = label?.split(",").map(l => l.trim()).filter(l => l.length);
+    const labels = label?.split(",").map(l => l.trim()).filter(l => l.length);
 
-        // load the issue
-        const query_issue = `
-        query( $owner: String!, $repo: String! ${ labels ? ", $labels: [String!]" : "" }) {
-            repository(owner: $owner, name: $repo) {
-              name
-              
-              issues(states: [OPEN], first:100 ${ labels ? ", labels: $labels" : "" }) {
-                    nodes {
-                    author {
-                        login 
-                    }
-                    id
-                    number
-                    title
-                    createdAt
-                    lastEditedAt
-                    body
-                    bodyResourcePath
-                    labels(first:10) {
-                      nodes {
-                        name
-                      }
-                    }
-                  }
-              }
-            }
-        }`;
+    // load the issue
+    const issues = await loadIssues(octokit, labels);
 
-        const query_issue_variables = {
-            "owner": github.context.repo.owner,
-            "repo": github.context.repo.repo
-        };
+    if (issues && issues.length > 0) {
+        // load the issue template fields
 
-        if (labels) {
-            query_issue_variables.labels = labels;
-        }
+        let hintFields;
 
-
-        const issue_result = await octokit.graphql(query_issue, query_issue_variables);
-
-        const issues = issue_result.repository.issues.nodes;
-
-        if (issues.length > 0) {
-            // load the issue template fields
-
+        if (formhints) {
             const formfile = await fs.readFile(formhints, "utf-8");
-            const hintFields = YAML.parse(formfile);
 
-            for (const issue of issues) {
-                // check if the issue is ready for publishing
-                const labeled_publishing = issue.labels?.nodes?.filter(l => l.name === publish_label).length;
-                const user_publishing = false;
-
-                core.debug(`issue is ${JSON.stringify(issue, null, 2)}`);
-                core.debug(`issue ${issue.number} is ready for publishing: ${labeled_publishing} based on ${publish_label}`);
-                core.debug(`issue labels are ${issue.labels.nodes.map(l => l.name).join( ", " )}`);
-
-                if (!labeled_publishing && !user_publishing) {
-                    core.info("issue is not ready for publishing");
-                    continue;
-                }
-
-                if (issue_template) {
-                    // validate the issue template fields
-                    core.debug("validate against issue template fields");
-                }
-
-                // create the issue's target folder
-                core.debug("create parent directory for the issue's content");
-                await fs.mkdir(path.join(target_folder, `${issue_template || "page"}_${issue.number}`), {recursive: true});
-
-                // download all attachments and keep the content type
-                // replace all links to point to the correct location of the attachments
-
-                // NOTE: During development attachments remain at github
-                // However, for production we need the files so renderers can access them
-
-                const [date, time] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
-                const title = issue.title;
-                const author = issue.author.login;
-
-                const body = issue.body;
-
-                // ignore issues without body
-                if (!(body && body.length)) {
-                    core.debug("issue has no body, do not publish.");
-                    continue;
-                }
-
-                core.debug("render the markdown");
-
-                const context = {
-                    title,
-                    body,
-                    date,
-                    time,
-                    author
-                };
-                let page_content = "";
-
-                if (template) {
-                    page_content = NJK.render(template, context);
-                }
-                else {
-                    page_content = NJK.renderString("# {{ title }}\n{{ body | safe }}\n", context);
-                }
-
-                // create the index.md file with the issue content
-                core.debug("write the issue as a markdown page");
-
-                await fs.writeFile(
-                    path.join(target_folder, `${issue_template || "page"}_${issue.number}`, "index.md"),
-                    page_content
-                );
-
-                if (bool_close) {
-                    core.debug("close the issue");
-                    const close_issue_query = `mutation($issueId: ID!) {
-                        data: updateIssue(input: {id : $issueId, state: CLOSED}){
-                          issue {
-                            id
-                            number
-                            state
-                          }
-                      }
-                    }`;
-
-                    const ci_variables = {
-                        issueId: issue.id
-                    };
-
-                    // inform GH to close the issue
-                    const result = await octokit.graphql(close_issue_query, ci_variables);
-
-                    core.info(`issue ${issue.id} has resulted in ${JSON.stringify(result, null, 2)}`);
-
-                    if (result.data.issue.id === issue.id &&
-                        result.data.issue.state === "CLOSED") {
-                        core.info(`Issue ${issue.number} has been closed`);
-                    }
-                }
-            }
+            hintFields = YAML.parse(formfile);
         }
 
-        core.info(`The event payload: ${message}`);
+        // handle one issue at the time!
+        for (const issue of issues) {
+            // check if the issue is ready for publishing
+            const labeled_publishing = issue.labels?.nodes?.filter(l => l.name === publish_label).length;
+            const user_publishing = false;
+
+            core.debug(`issue is ${JSON.stringify(issue, null, 2)}`);
+            core.debug(`issue ${issue.number} is ready for publishing: ${labeled_publishing} based on ${publish_label}`);
+            core.debug(`issue labels are ${issue.labels.nodes.map(l => l.name).join( ", " )}`);
+
+            if (!labeled_publishing && !user_publishing) {
+                core.info("issue is not ready for publishing");
+                continue;
+            }
+
+            // ignore issues without body
+            if (!(issue.body && issue.body.length)) {
+                core.debug("issue has no body, do not publish.");
+                continue;
+            }
+
+            // create the issue's target folder
+            core.debug("create parent directory for the issue's content");
+            await fs.mkdir(path.join(target_folder, `${hintFields.name || "page"}_${issue.number}`), {recursive: true});
+
+            // download all attachments and keep the content type
+            // replace all links to point to the correct location of the attachments
+
+            const targetPath = path.join(
+                target_folder,
+                `${hintFields.name || "page"}_${issue.number}`
+            );
+
+            const body = loadAttachments(issue.body, targetPath);
+
+            // NOTE: During development attachments remain at github
+            // However, for production we need the files so renderers can access them
+
+            const [date, time] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
+            const title = issue.title.replace(hintFields?.prefix || "", "").trim();
+            const author = issue.author.login;
+
+            core.debug("render the markdown");
+
+            const context = {
+                title,
+                date,
+                time,
+                author,
+                ... mapBodyLabels(body, hintFields.body),
+                ... hintFields?.extra
+            };
+
+            await renderToFile(
+                template,
+                context,
+                path.join(
+                    targetPath,
+                    "index.md"
+                )
+            );
+
+            if (bool_close) {
+                await closeIssue(issue, octokit);
+            }
+        }
+    }
+
+    core.info(`The event payload: ${message}`);
+}
+
+async function renderToFile(template, context, targetFile) {
+    let page_content = "";
+
+    if (template) {
+        page_content = NJK.render(template, context);
+    }
+    else {
+        page_content = NJK.renderString("# {{ title }}\n{{ body | safe }}\n", context);
+    }
+
+    // create the index.md file with the issue content
+    core.debug("write the issue as a markdown page");
+
+    await fs.writeFile(targetFile, page_content);
+}
+
+async function closeIssue(issue, octokit) {
+    core.debug("close the issue");
+    const close_issue_query = `mutation($issueId: ID!) {
+        data: updateIssue(input: {id : $issueId, state: CLOSED}){
+          issue {
+            id
+            number
+            state
+          }
+      }
+    }`;
+
+    const ci_variables = {
+        issueId: issue.id
+    };
+
+    // inform GH to close the issue
+    const result = await octokit.graphql(close_issue_query, ci_variables);
+
+    core.info(`issue ${issue.id} has resulted in ${JSON.stringify(result, null, 2)}`);
+
+    if (result.data.issue.id === issue.id &&
+        result.data.issue.state === "CLOSED") {
+        core.info(`Issue ${issue.number} has been closed`);
+    }
+}
+
+function splitBody(body) {
+    const fields = body.split(/(### [^\n]+)/);
+
+    if (!fields || fields.length === 1) {
+        return {body};
+    }
+
+    if (fields[0].length === 0) {
+        fields.shift();
+    }
+
+    // this reduction only works because the split function will return an array
+    // with alternating elements of the split and the delimiter
+    return Object.fromEntries(
+        fields.reduce((acc, field) => {
+            if (field.match(/### [^\n]+/) !== null) {
+                acc.push([field.replace("### ", "").trim()]);
+            }
+            // this condtion ensures that leading texts are igored
+            else if (acc.length > 0){
+                acc[acc.length - 1].push(field.trim());
+            }
+            return acc;
+        }, [])
+    );
+}
+
+function mapBodyLabels(body, bodyHints) {
+    if(!bodyHints) {
+        return {body};
+    }
+
+    const regexImage = /!\[([^\]]+)\]\(([^)]+)\)/g;
+    const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
+
+    const bodyFields = splitBody(body);
+
+    if (bodyFields.length === 0) {
+        return {body};
+    }
+
+    const fields = Object.entries(bodyFields).map(([key, value]) => {
+        const keylist = bodyHints.filter(hint => hint.label === key);
+
+        if (keylist.length === 0) {
+            return null;
+        }
+        const newkey = keylist.shift();
+
+        if (!("id" in newkey)) {
+            return null;
+        }
+
+        value = value.trim();
+
+        if (value === "_No response_") {
+            return null;
+        }
+
+        if ( newkey.type === "list" ) {
+            value = value.split("- ").map(v => v.trim()).filter(v => v.length);
+        }
+        if ( newkey.type === "image" ) {
+            value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
+        }
+        if ( newkey.type === "[image]" ) {
+            value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
+        }
+        if ( newkey.type === "file" ) {
+            value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
+        }
+        if ( newkey.type === "[file]" ) {
+            value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
+        }
+
+        return [newkey.id, value];
+    }).filter(f => f !== null);
+
+    if (fields.length === 0) {
+        return {body};
+    }
+
+    return Object.fromEntries(fields);
+}
+
+async function loadAttachments(body, targetDir) {
+    const {owner, repo} = github.context.repo;
+
+    if (!targetDir) {
+        targetDir = "";
+    }
+
+    // we can only handle attaches to issues,
+    // everything else is treated as regular links
+    const regex = new RegExp(`https://github.com/${owner}/${repo}/assets/`);
+
+    // get all attachment references
+    const attachments = [...body.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)]
+        .map(([_, name, url]) => ({name, url})) // eslint-disable-line no-unused-vars
+        .filter(u => u.url.match(regex) !== null);
+
+    if (attachments.length === 0) {
+        // handle one file at the time to catch errors
+        for (const attachment of attachments) {
+            // download all attachments and keep the content type
+            try {
+                const respose = await fetch(attachment.url);
+                const blob = await respose.blob();
+
+                const type = blob.type.replace(/[^/]+\//, ""); // keep only the suffix
+                const fullFilename = `${attachment.name}.${type}`;
+                const fspath = path.join(targetDir, fullFilename);
+
+                await fs.writeFile(fspath, blob.stream());
+
+                // replace all links to point to the correct location of the attachment
+                body = body.replace(attachment.url, fullFilename);
+            }
+            catch (error) {
+                core.debug(`error downloading attachment ${attachment.url}`);
+                // keep going
+            }
+        }
+    }
+
+    return body;
+}
+
+async function loadIssues(octokit, labels) {
+    const query_issue =
+    `query( $owner: String!, $repo: String! ${ labels ? ", $labels: [String!]" : "" }) {
+        repository(owner: $owner, name: $repo) {
+          name
+          
+          issues(states: [OPEN], first:100 ${ labels ? ", labels: $labels" : "" }) {
+                nodes {
+                author {
+                    login 
+                }
+                id
+                number
+                title
+                createdAt
+                lastEditedAt
+                body
+                bodyResourcePath
+                labels(first:10) {
+                  nodes {
+                    name
+                  }
+                }
+              }
+          }
+        }
+    }`;
+
+    const {owner, repo} = github.context.repo;
+
+    const issue_result = await octokit.graphql(query_issue, labels ? {owner, repo, labels} : {owner, repo});
+
+    return issue_result?.repository?.issues?.nodes;
+}
+
+async function main() {
+
+    try {
+        await run();
     }
     catch (error) {
         core.setFailed(error.message);
     }
 }
 
-run();
+// execute the action
+main();

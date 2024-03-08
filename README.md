@@ -20,9 +20,10 @@ the issue should remain open.
 
 The github access token for the action. Defaults to `github.token`. Use your own token if really needed. 
 
-### `issue-template`
+### `formhints`
 
-Inform if a template is used. This will then preprocess the issue. If no template is provided, then the issue will be just dumped as plain markdown.
+Inform if a template is used. This file is an additional helper file that informs the action about how the 
+field is supposed to be used.
 
 ### `label` 
 

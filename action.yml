@@ -17,9 +17,6 @@ inputs:
     description: "the token to access github"
     default: ${{ github.token }}
     required: false
-  issue-template:
-    description: 'template used for the issue'
-    required: false
   label:
     description: 'issue label to handle'
     required: false
