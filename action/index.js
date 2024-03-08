@@ -45764,7 +45764,7 @@ async function run() {
 
             const body = await loadAttachments(issue.body, targetPath);
 
-            core.debug(`loaded attachments: ${body}`);
+            // core.debug(`loaded attachments: ${body}`);
 
             // NOTE: During development attachments remain at github
             // However, for production we need the files so renderers can access them
@@ -45969,10 +45969,13 @@ async function loadAttachments(body, targetDir) {
     // everything else is treated as regular links
     const regex = new RegExp(`https://github.com/${owner}/${repo}/assets/`);
 
+    core.debug(`attachment regex is ${regex}`);
     // get all attachment references
-    const attachments = [...body.matchAll(/\[([^\]]+)\]\(([^)]+)\)/g)]
+    const attachments = [...body.matchAll(/\[([^\]]+)\]\(([^)]+)\)/)]
         .map(([_, name, url]) => ({name, url})) // eslint-disable-line no-unused-vars
         .filter(u => u.url.match(regex) !== null);
+
+    core.debug(`attachments are ${attachments}`);
 
     if (attachments.length === 0) {
         // handle one file at the time to catch errors
