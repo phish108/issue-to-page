@@ -45904,6 +45904,8 @@ function hintHandler(bodyHints) {
 
         const newkey = keylist.shift();
 
+        core.debug(`hint for ${key} is ${newkey}`);
+
         if (!("id" in newkey)) {
             core.debug(`no id for ${newkey} (${key})`);
             return null;
@@ -45915,6 +45917,8 @@ function hintHandler(bodyHints) {
             core.debug(`no response for ${newkey.id}`);
             return null;
         }
+
+        core.debug(`remap field as ${newkey.type}`);
 
         if ( newkey.type === "list" ) {
             value = value.split("- ").map(v => v.trim()).filter(v => v.length);
