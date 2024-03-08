@@ -36,9 +36,11 @@ async function run() {
         let hintFields;
 
         if (formhints) {
-            const formfile = await fs.readFile(formhints, "utf-8");
+            core.debug(`load form hints from ${formhints} file`);
+            const formfile = await fs.readFile(formhints);
 
             hintFields = YAML.parse(formfile);
+            core.debug(hintFields);
         }
 
         // handle one issue at the time!
@@ -204,6 +206,7 @@ function splitBody(body) {
 
 function mapBodyLabels(body, bodyHints) {
     if(!bodyHints) {
+        core.debug("no hints for body");
         return {body};
     }
 
