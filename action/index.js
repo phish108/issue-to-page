@@ -45969,7 +45969,7 @@ function mapBodyLabels(body, bodyHints) {
         return null;
     }
 
-    core.debug(`mapped fields ${fields}`);
+    core.info(`mapped fields ${fields}`);
 
     return Object.fromEntries(fields);
 }
@@ -46008,7 +46008,7 @@ async function loadAttachments(body, targetDir) {
                 const respose = await fetch(attachment.url);
                 const blob = await respose.blob();
 
-                const type = blob.type.replace(/[^/]+\//, ""); // keep only the suffix
+                const type = blob.type.replace(/[^/]+\//, "").replace(/\+.+/, ""); // keep only the suffix
                 const fullFilename = `${attachment.name}.${type}`;
                 const fspath = path.join(targetDir, fullFilename);
 
