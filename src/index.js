@@ -74,7 +74,7 @@ async function run() {
                 `${hintFields.name || "page"}_${issue.number}`
             );
 
-            const body = loadAttachments(issue.body, targetPath);
+            const body = await loadAttachments(issue.body, targetPath);
 
             core.debug(`loaded attachments: ${body}`);
 
@@ -170,7 +170,7 @@ async function closeIssue(issue, octokit) {
 }
 
 function splitBody(body) {
-    core.debug("split body into form fields for ${body}");
+    core.debug(`split body into form fields for ${body}`);
 
     const fields = body.split(/(### [^\n]+)/);
 
@@ -265,6 +265,8 @@ function mapBodyLabels(body, bodyHints) {
 async function loadAttachments(body, targetDir) {
     const {owner, repo} = github.context.repo;
 
+    core.debug(`load attachments for ${owner}/${repo} and ${targetDir}`);
+
     if (!targetDir) {
         targetDir = "";
     }
@@ -303,6 +305,8 @@ async function loadAttachments(body, targetDir) {
             }
         }
     }
+
+    core.debug(`loaded attachments for: ${body}`);
 
     return body;
 }
