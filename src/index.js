@@ -101,6 +101,8 @@ async function run() {
                 ... hintFields?.extra
             };
 
+            core.debug(`context is ${context}`);
+
             if (context.body?.length) {
                 core.debug("issue has no body, do not publish.");
                 continue;
@@ -205,7 +207,7 @@ function mapBodyLabels(body, bodyHints) {
         return {body};
     }
 
-    core.debug("map body to form hints");
+    core.debug(`map body to form hints ${bodyHints}`);
 
     const regexImage = /!\[([^\]]+)\]\(([^)]+)\)/g;
     const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
@@ -223,6 +225,7 @@ function mapBodyLabels(body, bodyHints) {
         if (keylist.length === 0) {
             return null;
         }
+
         const newkey = keylist.shift();
 
         if (!("id" in newkey)) {
@@ -258,6 +261,8 @@ function mapBodyLabels(body, bodyHints) {
         core.debug("no valid fields found in body");
         return null;
     }
+
+    core.debug(`mapped fields ${fields}`);
 
     return Object.fromEntries(fields);
 }
