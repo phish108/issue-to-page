@@ -107,10 +107,10 @@ async function run() {
                 ... hintFields?.extra
             };
 
-            core.debug(`context is ${context}`);
+            core.debug(`context is ${JSON.stringify(context)}`);
 
             if (context.body?.length) {
-                core.debug("issue has no body, do not publish.");
+                core.debug("issue context has no body, do not publish.");
                 continue;
             }
 
