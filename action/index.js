@@ -45762,6 +45762,8 @@ async function run() {
 
             const body = loadAttachments(issue.body, targetPath);
 
+            core.debug(`loaded attachments: ${body}`);
+
             // NOTE: During development attachments remain at github
             // However, for production we need the files so renderers can access them
 
@@ -45770,6 +45772,11 @@ async function run() {
             const author = issue.author.login;
 
             core.debug("render the markdown");
+
+            if (body?.length) {
+                core.debug("issue has no body, do not publish.");
+                continue;
+            }
 
             const context = {
                 title,
@@ -45780,7 +45787,7 @@ async function run() {
                 ... hintFields?.extra
             };
 
-            if (context.body?.length === 0) {
+            if (context.body?.length) {
                 core.debug("issue has no body, do not publish.");
                 continue;
             }
