@@ -92,6 +92,11 @@ async function run() {
                 ... hintFields?.extra
             };
 
+            if (context.body?.length === 0) {
+                core.debug("issue has no body, do not publish.");
+                continue;
+            }
+
             await renderToFile(
                 template,
                 context,
@@ -112,6 +117,8 @@ async function run() {
 
 async function renderToFile(template, context, targetFile) {
     let page_content = "";
+
+    core.debug(`render the issue to ${targetFile}`);
 
     if (template) {
         page_content = NJK.render(template, context);
@@ -156,6 +163,8 @@ async function closeIssue(issue, octokit) {
 function splitBody(body) {
     const fields = body.split(/(### [^\n]+)/);
 
+    core.debug("split body into form fields");
+
     if (!fields || fields.length === 1) {
         return {body};
     }
@@ -185,12 +194,15 @@ function mapBodyLabels(body, bodyHints) {
         return {body};
     }
 
+    core.debug("map body to form hints");
+
     const regexImage = /!\[([^\]]+)\]\(([^)]+)\)/g;
     const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
 
     const bodyFields = splitBody(body);
 
     if (bodyFields.length === 0) {
+        core.debug("no fields found in body");
         return {body};
     }
 
@@ -232,7 +244,8 @@ function mapBodyLabels(body, bodyHints) {
     }).filter(f => f !== null);
 
     if (fields.length === 0) {
-        return {body};
+        core.debug("no valid fields found in body");
+        return null;
     }
 
     return Object.fromEntries(fields);
@@ -257,6 +270,8 @@ async function loadAttachments(body, targetDir) {
     if (attachments.length === 0) {
         // handle one file at the time to catch errors
         for (const attachment of attachments) {
+            core.debug(`download attachment ${attachment.name}`);
+
             // download all attachments and keep the content type
             try {
                 const respose = await fetch(attachment.url);
