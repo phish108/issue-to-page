@@ -46014,6 +46014,9 @@ async function loadIssues(octokit, labels) {
 
     const {owner, repo} = github.context.repo;
 
+    core.debug(`load issues for ${owner}/${repo} and ${labels}`);
+    core.debug(`query is ${query_issue}`);
+
     const issue_result = await octokit.graphql(query_issue, labels ? {owner, repo, labels} : {owner, repo});
 
     core.debug(issue_result);
