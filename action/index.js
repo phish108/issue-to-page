@@ -45976,7 +45976,7 @@ async function loadAttachments(body, targetDir) {
         .map(([_, name, url]) => ({name, url})) // eslint-disable-line no-unused-vars
         .filter(u => u.url.match(regex));
 
-    core.debug(`attachments are ${attachments}`);
+    core.debug(`attachments are ${JSON.stringify(attachments)}`);
 
     if (attachments.length === 0) {
         // handle one file at the time to catch errors
