@@ -28,6 +28,8 @@ async function run() {
     // load the issue
     const issues = await loadIssues(octokit, labels);
 
+    core.debug(`got issues? ${issues && issues.length > 0}`);
+
     if (issues && issues.length > 0) {
         // load the issue template fields
 
@@ -328,6 +330,7 @@ async function loadIssues(octokit, labels) {
 
     const issue_result = await octokit.graphql(query_issue, labels ? {owner, repo, labels} : {owner, repo});
 
+    core.debug(issue_result);
     return issue_result?.repository?.issues?.nodes;
 }
 
