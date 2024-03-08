@@ -109,7 +109,7 @@ async function run() {
 
             core.debug(`context is ${JSON.stringify(context)}`);
 
-            if (context.body?.length) {
+            if (!("body" in context && context.body.length)) {
                 core.debug("issue context has no body, do not publish.");
                 continue;
             }
