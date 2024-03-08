@@ -45924,20 +45924,24 @@ function hintHandler(bodyHints) {
 
         core.debug(`remap field as ${newkey.type}`);
 
-        if ( newkey.type === "list" ) {
-            value = value.split("- ").map(v => v.trim()).filter(v => v.length);
-        }
-        if ( newkey.type === "image" ) {
-            value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
-        }
-        if ( newkey.type === "[image]" ) {
-            value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
-        }
-        if ( newkey.type === "file" ) {
-            value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
-        }
-        if ( newkey.type === "[file]" ) {
-            value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
+        switch (newkey.type) {
+                case "list":
+                    value = value.split("- ").map(v => v.trim()).filter(v => v.length);
+                    break;
+                case "image":
+                    value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
+                    break;
+                case "[image]":
+                    value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
+                    break;
+                case "file":
+                    value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
+                    break;
+                case "[file]":
+                    value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
+                    break;
+                default:
+                    break;
         }
 
         core.debug(`remapped field ${newkey.id} to ${value}`);
