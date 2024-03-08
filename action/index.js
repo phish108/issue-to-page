@@ -45764,7 +45764,7 @@ async function run() {
 
             const body = await loadAttachments(issue.body, targetPath);
 
-            // core.debug(`loaded attachments: ${body}`);
+            core.debug(`loaded attachments: ${body}`);
 
             // NOTE: During development attachments remain at github
             // However, for production we need the files so renderers can access them
@@ -45775,7 +45775,7 @@ async function run() {
 
             core.debug("render the markdown");
 
-            if (body?.length) {
+            if (!body?.length) {
                 core.debug("issue has no body, do not publish.");
                 continue;
             }
