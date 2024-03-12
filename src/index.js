@@ -309,7 +309,7 @@ function mapBodyLabels(body, bodyHints) {
         return null;
     }
 
-    core.info(`mapped fields ${fields}`);
+    core.info(`mapped fields ${JSON.stringify(Object.fromEntries(fields))}`);
 
     return Object.fromEntries(fields);
 }
