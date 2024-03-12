@@ -237,7 +237,11 @@ function hintHandler(bodyHints) {
             return null;
         }
 
-        core.debug(`remap field as ${newkey.type}`);
+        if (!("type" in newkey)) {
+            newkey.type = "text";
+        }
+
+        core.info(`remap field as ${newkey.type}`);
 
         let date, time;
 
