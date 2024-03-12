@@ -241,7 +241,7 @@ function hintHandler(bodyHints) {
             newkey.type = "text";
         }
 
-        core.info(`remap field as ${newkey.type}`);
+        core.debug(`remap field as ${newkey.type}`);
 
         let date, time;
 
@@ -251,7 +251,6 @@ function hintHandler(bodyHints) {
                     break;
                 case "image":
                     value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
-                    core.info(`value is ${JSON.stringify(value)}`);
                     break;
                 case "[image]":
                     value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
