@@ -258,6 +258,9 @@ function hintHandler(bodyHints) {
                     value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
                     break;
                 case "flag":
+                    value = [...value.matchAll(regexOptions)].map(([_, flag, name]) => ({flag, name})).shift(); // eslint-disable-line no-unused-vars
+                    break;
+                case "[flag]":
                     value = [...value.matchAll(regexOptions)].map(([_, flag, name]) => ({flag, name})); // eslint-disable-line no-unused-vars
                     break;
                 case "date":
