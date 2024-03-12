@@ -247,6 +247,7 @@ function hintHandler(bodyHints) {
                     break;
                 case "image":
                     value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
+                    core.info(JSON.stringify(value));
                     break;
                 case "[image]":
                     value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
