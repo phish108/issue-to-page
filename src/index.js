@@ -239,6 +239,8 @@ function hintHandler(bodyHints) {
 
         core.debug(`remap field as ${newkey.type}`);
 
+        let date, time;
+
         switch (newkey.type) {
                 case "list":
                     value = value.split("- ").map(v => v.trim()).filter(v => v.length);
@@ -257,6 +259,10 @@ function hintHandler(bodyHints) {
                     break;
                 case "flag":
                     value = [...value.matchAll(regexOptions)].map(([_, flag, name]) => ({flag, name})); // eslint-disable-line no-unused-vars
+                    break;
+                case "date":
+                    [date, time] = value.split(/[T\s]/);
+                    value = {date, time};
                     break;
                 default:
                     break;
