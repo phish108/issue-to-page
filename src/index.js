@@ -211,6 +211,7 @@ function splitBody(body) {
 function hintHandler(bodyHints) {
     const regexImage = /!\[([^\]]+)\]\(([^)]+)\)/g;
     const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
+    const regexOptions = /- \[([X\s]?)\] ([^\n]+)/g; // load checkbox list
 
     return function handleHintType([key, value]) {
         const keylist = bodyHints.filter(hint => hint.label === key);
@@ -253,6 +254,9 @@ function hintHandler(bodyHints) {
                     break;
                 case "[file]":
                     value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
+                    break;
+                case "flag":
+                    value = [...value.matchAll(regexOptions)].map(([_, flag, name]) => ({flag, name})); // eslint-disable-line no-unused-vars
                     break;
                 default:
                     break;
