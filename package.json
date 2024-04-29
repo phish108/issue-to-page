@@ -16,7 +16,7 @@
     "@eslint/js": "8.57.0",
     "@vercel/ncc": "0.38.1",
     "eslint": "8.57.0",
-    "globals": "15.0.0"
+    "globals": "15.1.0"
   },
   "dependencies": {
     "@actions/core": "1.10.1",
