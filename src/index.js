@@ -295,6 +295,8 @@ function tableToObject(tablestring) {
     // the first row is the header with the field names
     const headers = rows.shift();
 
+    rows.shift(); // remove the separator
+
     return rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
 }
 
