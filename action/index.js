@@ -45897,6 +45897,7 @@ function splitBody(body) {
 function hintHandler(bodyHints) {
     const regexImage = /!\[([^\]]+)\]\(([^)]+)\)/g;
     const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
+    const regexOptions = /- \[([X\s]?)\] ([^\n]+)/g; // load checkbox list
 
     return function handleHintType([key, value]) {
         const keylist = bodyHints.filter(hint => hint.label === key);
@@ -45922,7 +45923,13 @@ function hintHandler(bodyHints) {
             return null;
         }
 
+        if (!("type" in newkey)) {
+            newkey.type = "text";
+        }
+
         core.debug(`remap field as ${newkey.type}`);
+
+        let date, time;
 
         switch (newkey.type) {
                 case "list":
@@ -45940,6 +45947,19 @@ function hintHandler(bodyHints) {
                 case "[file]":
                     value = [...value.matchAll(regexFile)].map(([_, name, url]) => ({name, url})); // eslint-disable-line no-unused-vars
                     break;
+                case "flag":
+                    value = [...value.matchAll(regexOptions)].map(([_, flag, name]) => ({flag, name})).shift(); // eslint-disable-line no-unused-vars
+                    break;
+                case "[flag]":
+                    value = [...value.matchAll(regexOptions)].map(([_, flag, name]) => ({flag, name})); // eslint-disable-line no-unused-vars
+                    break;
+                case "date":
+                    [date, time] = value.split(/[T\s]/);
+                    value = {date, time};
+                    break;
+                case "table":
+                    value = tableToObject(value);
+                    break;
                 default:
                     break;
         }
@@ -45947,6 +45967,21 @@ function hintHandler(bodyHints) {
         core.debug(`remapped field ${newkey.id} to ${value}`);
         return [newkey.id, value];
     };
+}
+
+function tableToObject(tablestring) {
+    // split the table into rows
+    // strip the leading and the trailing pipes
+    // split all rows row into columns and
+    // strip the leading and the trailing spaces
+    const rows = tablestring.split("\n").map(
+        r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim())
+    );
+
+    // the first row is the header with the field names
+    const headers = rows.shift();
+
+    return rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
 }
 
 function dropEmpty(f) {
@@ -45977,7 +46012,7 @@ function mapBodyLabels(body, bodyHints) {
         return null;
     }
 
-    core.info(`mapped fields ${fields}`);
+    core.info(`mapped fields ${JSON.stringify(Object.fromEntries(fields))}`);
 
     return Object.fromEntries(fields);
 }
