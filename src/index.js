@@ -271,6 +271,9 @@ function hintHandler(bodyHints) {
                     [date, time] = value.split(/[T\s]/);
                     value = {date, time};
                     break;
+                case "table":
+                    value = tableToObject(value);
+                    break;
                 default:
                     break;
         }
@@ -278,6 +281,21 @@ function hintHandler(bodyHints) {
         core.debug(`remapped field ${newkey.id} to ${value}`);
         return [newkey.id, value];
     };
+}
+
+function tableToObject(tablestring) {
+    // split the table into rows
+    // strip the leading and the trailing pipes
+    // split all rows row into columns and
+    // strip the leading and the trailing spaces
+    const rows = tablestring.split("\n").map(
+        r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim())
+    );
+
+    // the first row is the header with the field names
+    const headers = rows.shift();
+
+    return rows.map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
 }
 
 function dropEmpty(f) {
