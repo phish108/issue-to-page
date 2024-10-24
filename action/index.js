@@ -45966,7 +45966,7 @@ function hintHandler(bodyHints) {
                     break;
         }
 
-        if (newkey.type === "text" && newkey?.fix_header) {
+        if (newkey.type === "text" && newkey?.fix_heading) {
             value = value.replace(regexFixHeader, "");
         }
 
