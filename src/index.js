@@ -384,7 +384,7 @@ async function loadAttachments(body, targetDir) {
                 body = body.replace(attachment.url, fullFilename);
             }
             catch (error) {
-                core.debug(`error downloading attachment ${attachment.url}`);
+                core.debug(`error downloading attachment ${attachment.url}: ${error.message}`);
                 // keep going
             }
         }
