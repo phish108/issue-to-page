@@ -22,6 +22,6 @@
     "@actions/core": "1.11.1",
     "@actions/github": "6.0.0",
     "nunjucks": "3.2.4",
-    "yaml": "2.5.0"
+    "yaml": "2.6.0"
   }
 }
