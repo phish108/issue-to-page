@@ -213,7 +213,7 @@ function hintHandler(bodyHints) {
     const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
     const regexOptions = /- \[([X\s]?)\] ([^\n]+)/g; // load checkbox list
 
-    const regexFixHeader = /^\s*##/g; // drop leading ## to raise the header level
+    const regexFixHeader = /^\s*###/g; // drop leading ## to raise the header level
 
     return function handleHintType([key, value]) {
         const keylist = bodyHints.filter(hint => hint.label === key);
@@ -281,7 +281,8 @@ function hintHandler(bodyHints) {
         }
 
         if (newkey.type === "text" && newkey?.fix_heading) {
-            value = value.replace(regexFixHeader, "");
+            // ensure that we don't accidentally drop a header
+            value = value.replace(regexFixHeader, "#");
         }
 
         core.debug(`remapped field ${newkey.id} to ${value}`);
