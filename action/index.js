@@ -47064,7 +47064,7 @@ function hintHandler(bodyHints) {
 
         switch (newkey.type) {
                 case "list":
-                    value = value.split("- ").map(v => v.trim()).filter(v => v.length);
+                    value = value.split("- ").map(v => v.trim()).filter(v => v.length).map(v => `"${v}"`);
                     break;
                 case "image":
                     value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
@@ -47097,7 +47097,8 @@ function hintHandler(bodyHints) {
 
         if (newkey.type === "text" && newkey?.fix_heading) {
             // ensure that we don't accidentally drop a header
-            value = value.replace(regexFixHeader, "#");
+            value = `"${ value.replace(regexFixHeader, "#") }"`;
+
         }
 
         core.debug(`remapped field ${newkey.id} to ${value}`);
