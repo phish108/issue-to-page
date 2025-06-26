@@ -351,7 +351,7 @@ async function loadAttachments(body, targetDir) {
 
     // we can only handle attaches to issues,
     // everything else is treated as regular links
-    const regex = new RegExp(`https://github\\.com/${owner}/${repo}/assets/`);
+    const regex = new RegExp(`https://github\\.com/user-attachments/assets/`);
 
     core.debug(`attachment regex is ${regex}`);
 
