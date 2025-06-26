@@ -47190,7 +47190,7 @@ async function loadAttachments(body, targetDir) {
                 const blob = await respose.blob();
 
                 const type = blob.type.replace(/[^/]+\//, "").replace(/\+.+/, ""); // keep only the suffix
-                const fullFilename = `${attachment.name}.${type}`;
+                const fullFilename = `${attachment.name.replace(/[\s()%?'"`^=@]+/, "_")}.${type}`;
                 const fspath = path.join(targetDir, fullFilename);
 
                 await fs.writeFile(fspath, blob.stream());
