@@ -84,7 +84,7 @@ async function run() {
             // However, for production we need the files so renderers can access them
 
             const [date, time] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
-            const title = issue.title.replace(hintFields?.prefix || "", "").trim();
+            const title = protectYAMLstrings(issue.title.replace(hintFields?.prefix || "", "").trim());
             const author = issue.author.login;
 
             core.debug("render the markdown");
