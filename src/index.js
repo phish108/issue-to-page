@@ -83,7 +83,8 @@ async function run() {
             // NOTE: During development attachments remain at github
             // However, for production we need the files so renderers can access them
 
-            const [date, time] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
+            // const [date, time] = issue.lastEditedAt?.split("T") || issue.createdAt.split("T");
+            const [date, time] = issue.createdAt.split("T");
             const title = protectYAMLstrings(issue.title.replace(hintFields?.prefix || "", "").trim());
             const author = issue.author.login;
 
