@@ -47117,7 +47117,13 @@ function hintHandler(bodyHints) {
 
         }
 
-        if (newkey.id !== "body" && newkey.type === "text") {
+        if (newkey.indent > 0) {
+            const indent = " ".repeat(newkey.indent);
+
+            value = indent + value.replace(/\n/g, `\n${indent}`);
+        }
+
+        if (newkey.id !== "body" && newkey.type === "text" && !newkey.indent > 0 ) {
             value = protectYAMLstrings(value);
         }
 
