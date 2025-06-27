@@ -47113,8 +47113,12 @@ function hintHandler(bodyHints) {
 
         if (newkey.type === "text" && newkey?.fix_heading) {
             // ensure that we don't accidentally drop a header
-            value = protectYAMLstrings(value.replace(regexFixHeader, "#"));
+            value = value.replace(regexFixHeader, "#");
 
+        }
+
+        if (newkey.id !== "body" && newkey.type === "text") {
+            value = protectYAMLstrings(value);
         }
 
         core.debug(`remapped field ${newkey.id} to ${value}`);
