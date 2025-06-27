@@ -308,7 +308,7 @@ function hintHandler(bodyHints) {
             value = indent + value.replace(/\n/g, `\n${indent}`);
         }
 
-        if (newkey.id !== "body" && newkey.type === "text" && !newkey.indent > 0 ) {
+        if (newkey.id !== "body" && newkey.type === "text" && !(newkey.indent > 0) ) {
             value = protectYAMLstrings(value);
         }
 
