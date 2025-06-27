@@ -219,7 +219,8 @@ function protectYAMLstrings(value) {
             return `"${value}"`;
         }
 
-        return YAML.stringify(value);
+        // if a string is protected then it must not contain newlines
+        return YAML.stringify(value).replace(/\n/g, " ");
     }
     return value;
 }
