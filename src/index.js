@@ -214,6 +214,11 @@ function protectYAMLstrings(value) {
     if (
         typeof value === "string"
     ) {
+        if (value === "-" || value === ":") {
+            // stringify ignores single dash and colon :(
+            return `"${value}"`;
+        }
+
         return YAML.stringify(value);
     }
     return value;
