@@ -305,7 +305,7 @@ function hintHandler(bodyHints) {
         if (newkey.indent > 0) {
             const indent = " ".repeat(newkey.indent);
 
-            value = indent + value.replace(/\n/g, `\n${indent}`);
+            value = value.replace(/\n/g, `\n${indent}`);
         }
 
         if (newkey.id !== "body" && newkey.type === "text" && !(newkey.indent > 0) ) {
