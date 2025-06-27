@@ -47023,6 +47023,17 @@ function splitBody(body) {
     );
 }
 
+function protectYAMLstrings(value) {
+    // protect YAML strings that start with a dash
+    // so they are not interpreted as YAML
+    if (
+        typeof value === "string"
+    ) {
+        return YAML.stringify(value);
+    }
+    return value;
+}
+
 function hintHandler(bodyHints) {
     const regexImage = /!\[([^\]]+)\]\(([^)]+)\)/g;
     const regexFile = /\[([^\]]+)\]\(([^)]+)\)/g; // including images
@@ -47064,7 +47075,7 @@ function hintHandler(bodyHints) {
 
         switch (newkey.type) {
                 case "list":
-                    value = value.split("- ").map(v => v.trim()).filter(v => v.length).map(v => `${v}`);
+                    value = value.split("- ").map(v => v.trim()).filter(v => v.length).map(protectYAMLstrings);
                     break;
                 case "image":
                     value = [...value.matchAll(regexImage)].map(([_, name, url]) => ({name, url})).shift(); // eslint-disable-line no-unused-vars
@@ -47097,7 +47108,7 @@ function hintHandler(bodyHints) {
 
         if (newkey.type === "text" && newkey?.fix_heading) {
             // ensure that we don't accidentally drop a header
-            value = value.replace(regexFixHeader, "#");
+            value = protectYAMLstrings(value.replace(regexFixHeader, "#"));
 
         }
 
@@ -47112,7 +47123,7 @@ function tableToObject(tablestring) {
     // split all rows row into columns and
     // strip the leading and the trailing spaces
     const rows = tablestring.split("\n").map(
-        r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim())
+        r => r.trim().replace(/^\||\|$/g, "").split("|").map(c => protectYAMLstrings(c.trim()))
     );
 
     // the first row is the header with the field names
